@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: automatic-template-mail-transfer;
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 11MB
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ndqbao23@clc.fitus.edu.vn
+    password: 0909343633Abcd
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
