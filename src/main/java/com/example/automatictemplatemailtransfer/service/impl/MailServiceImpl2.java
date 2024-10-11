@@ -15,17 +15,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,7 +48,8 @@ public class MailServiceImpl2 implements MailService {
       if (!this.isDefaultRow(rowData)) {
         Document document = null;
         try {
-          document = new Document("/Users/baonguyen/DEV/automatic-template-mail-transfer/src/main/resources/templates/template1.docx");
+          InputStream fileStream = getClass().getClassLoader().getResourceAsStream("templates/template1.docx");
+          document = new Document(fileStream);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -70,7 +69,7 @@ public class MailServiceImpl2 implements MailService {
 
         String htmlContent = null;
         try {
-          htmlContent = Files.readString(Path.of("apose-html/template.html"), StandardCharsets.UTF_8);
+          htmlContent = this.getHtmlStringAfterRemoveAsposeAdvertisedLogo("apose-html/template.html");
           htmlContent = this.removeAsposeAdvertisement(htmlContent);
 //          log.info("=====> html content:{}", htmlContent);
         } catch (Exception e) {
@@ -128,5 +127,21 @@ public class MailServiceImpl2 implements MailService {
       htmlContent = htmlContent.replace(adString, "");
     }
     return htmlContent;
+  }
+
+  private String getHtmlStringAfterRemoveAsposeAdvertisedLogo(String htmlPath) throws IOException {
+    File htmlFile = new File(htmlPath);
+    org.jsoup.nodes.Document htmlDoc = Jsoup.parse(htmlFile,"UTF-8");
+
+    Elements spanElements = htmlDoc.select("span");
+
+    for (Element element : spanElements) {
+      String style = element.attr("style");
+      if (style.contains("z-index")){
+        element.remove();
+      }
+    }
+
+    return htmlDoc.outerHtml();
   }
 }
